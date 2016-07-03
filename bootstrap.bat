@@ -16,10 +16,6 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 IF NOT EXIST .\gaen (
   git clone -b master https://github.com/lachlanorr/gaen.git gaen
   if %errorlevel% neq 0 exit /b %errorlevel%
-  cd gaen
-  git checkout 77872b950df5aea6ca9238c6152decca7207f35f
-  if %errorlevel% neq 0 exit /b %errorlevel%
-  cd ..
 )
 
 :: Write root directory to main GAEN_SAMPLES_ROOT env var

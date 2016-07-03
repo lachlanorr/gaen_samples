@@ -9,9 +9,6 @@ BUILD_ROOT=$GAEN_SAMPLES_ROOT/build
 # bootstrap.sh for the first time.
 if [ ! -d "./gaen" ]; then
     git clone -b master https://github.com/lachlanorr/gaen.git gaen
-    cd gaen
-    git checkout 77872b950df5aea6ca9238c6152decca7207f35f
-    cd ..
 fi
 
 
