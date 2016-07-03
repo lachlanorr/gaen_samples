@@ -1,0 +1,33 @@
+
+entity Box
+{
+    components
+    {
+        gaen.shapes.Box{size    = vec3{3.0, 2.0, 1.0},
+                        diffuse = color{255, 255, 0, 255}},
+        gaen.utils.WasdRot{}
+    }
+}
+
+entity Light
+{
+    components
+    {
+        gaen.lights.Directional{}
+    }
+}
+
+entity Start
+{
+    #init()
+    {
+        // Simple test of sample fibonacci api function call.
+        // This is for illustration only, to show you how to
+        // create your own api calls.
+        $.print(string{"$.fibonacci(7) = %u", $.fibonacci(uint{7})});
+
+        // Make box and light entities
+        entity box = Box{};
+        entity light = Light{};
+    }
+}

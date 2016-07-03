@@ -1,0 +1,35 @@
+# Since we codegen various files in the repository,
+# force all into unix line endings.
+
+* text=auto
+
+# source files
+*.cpp   eol=lf
+*.h     eol=lf
+*.cc    eol=lf
+*.c     eol=lf
+*.l     eol=lf
+*.y     eol=lf
+*.py    eol=lf
+
+# cmake files
+*.txt   eol=lf
+*.cmake eol=lf
+
+# misc
+*.org   eol=lf
+*.bat   eol=lf
+*.sh    eol=lf
+*.html  eol=lf
+*.doxy  eol=lf
+*.def   eol=lf
+
+# Asset types that are really text files
+*.atl   eol=lf
+
+
+
+# some definitely binary types
+*.tga binary
+*.psd binary
+

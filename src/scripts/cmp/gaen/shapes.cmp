@@ -1,0 +1,125 @@
+//------------------------------------------------------------------------------
+// shapes.cmp - Simple faceted shapes, constructed algorithmically
+//
+// Gaen Concurrency Engine - http://gaen.org
+// Copyright (c) 2014-2016 Lachlan Orr
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+//   1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+//
+//   2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+//
+//   3. This notice may not be removed or altered from any source
+//   distribution.
+//------------------------------------------------------------------------------
+
+component Box
+{
+    vec3 #size = vec3{1.0, 1.0, 1.0};
+    color #diffuse = color{255, 0, 0, 255};
+    handle model;
+    uint modelUid = $.renderer_gen_uid();
+
+    #init()
+    {
+        model = $.create_shape_box(size, diffuse);
+        $.renderer_insert_model_instance(modelUid, model);
+    }
+
+    #update_transform()
+    {
+        $.renderer_transform_model_instance(modelUid, transform);
+    }
+}
+
+component Cone
+{
+    vec3 #size = vec3{1.0, 1.0, 1.0};
+    uint #slices = 16;
+    color #diffuse = color{255, 0, 0, 255};
+    handle model;
+    uint modelUid = $.renderer_gen_uid();
+
+    #init()
+    {
+        model = $.create_shape_cone(size, slices, diffuse);
+        $.renderer_insert_model_instance(modelUid, model);
+    }
+
+    #update_transform()
+    {
+        $.renderer_transform_model_instance(modelUid, transform);
+    }
+}
+
+component Cylinder
+{
+    vec3 #size = vec3{1.0, 1.0, 1.0};
+    uint #slices = 16;
+    color #diffuse = color{255, 0, 0, 255};
+    handle model;
+    uint modelUid = $.renderer_gen_uid();
+
+    #init()
+    {
+        model = $.create_shape_cylinder(size, slices, diffuse);
+        $.renderer_insert_model_instance(modelUid, model);
+    }
+
+    #update_transform()
+    {
+        $.renderer_transform_model_instance(modelUid, transform);
+    }
+}
+
+component Sphere
+{
+    vec3 #size = vec3{1.0, 1.0, 1.0};
+    uint #sections = 16;
+    uint #slices = 16;
+    color #diffuse = color{255, 0, 0, 255};
+    handle model;
+    uint modelUid = $.renderer_gen_uid();
+
+    #init()
+    {
+        model = $.create_shape_sphere(size, slices, sections, diffuse);
+        $.renderer_insert_model_instance(modelUid, model);
+    }
+
+    #update_transform()
+    {
+        $.renderer_transform_model_instance(modelUid, transform);
+    }
+}
+
+component QuadSphere
+{
+    vec3 #size = vec3{1.0, 1.0, 1.0};
+    uint #sections = 16;
+    color #diffuse = color{255, 0, 0, 255};
+    handle model;
+    uint modelUid = $.renderer_gen_uid();
+
+    #init()
+    {
+        model = $.create_shape_quad_sphere(size, sections, diffuse);
+        $.renderer_insert_model_instance(modelUid, model);
+    }
+
+    #update_transform()
+    {
+        $.renderer_transform_model_instance(modelUid, transform);
+    }
+}

@@ -1,0 +1,310 @@
+//------------------------------------------------------------------------------
+// utils.cmp - Misc utilities
+//
+// Gaen Concurrency Engine - http://gaen.org
+// Copyright (c) 2014-2016 Lachlan Orr
+//
+// This software is provided 'as-is', without any express or implied
+// warranty. In no event will the authors be held liable for any damages
+// arising from the use of this software.
+//
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+//
+//   1. The origin of this software must not be misrepresented; you must not
+//   claim that you wrote the original software. If you use this software
+//   in a product, an acknowledgment in the product documentation would be
+//   appreciated but is not required.
+//
+//   2. Altered source versions must be plainly marked as such, and must not be
+//   misrepresented as being the original software.
+//
+//   3. This notice may not be removed or altered from any source
+//   distribution.
+//------------------------------------------------------------------------------
+
+// Send a message to self entity at a certain interval
+component Timer
+{
+    float #timer_interval = 0.0;          // interval in seconds to send the timer message
+    uint #timer_message = 0;              // message to send with each timer message, useful if multiple timers are used in the same component
+
+    float last_notification = 0.0;
+
+    #update(float deltaSecs)
+    {
+        if (timer_interval > 0.0)
+        {
+            last_notification += deltaSecs;
+            if (last_notification >= timer_interval)
+            {
+                @#timer(timer_message);
+                last_notification = 0.0;
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+
+component WasdCamera
+{
+    vec3 dirForwardInit = vec3{ 0.0, 0.0, -1.0 };
+    vec3 dirRightInit = vec3{ 1.0, 0.0, 0.0 };
+    vec3 dirUpInit = vec3{ 0.0, 1.0, 0.0 };
+
+    vec3 dirForward = dirForwardInit;
+    vec3 dirRight = dirRightInit;
+    vec3 dirUp = dirUpInit;
+
+    quat orientation = quat{ 0.0, 0.0, 0.0, 1.0 };
+
+    vec3 pos = vec3{ 0.0, 0.0, 10.0 };
+
+    float moveDelta = 5.0;
+    float rotDelta = 0.0005;
+    
+    float forwardBackward = 0.0;
+    float leftRight = 0.0;
+
+    bool mouseLooking = false;
+    float mouseDeltaX = 0.0;
+    float mouseDeltaY = 0.0;
+    
+    int mouseWheelDelta = 0;
+
+    #init()
+    {
+        $.watch_input_state(#mouse_look, uint{0}, #mouse_look);
+        $.watch_mouse(#mouse_move, #mouse_wheel);
+
+        $.watch_input_state(#forward, uint{0}, #forward);
+        $.watch_input_state(#back, uint{0}, #back);
+        $.watch_input_state(#left, uint{0}, #left);
+        $.watch_input_state(#right, uint{0}, #right);
+    }
+
+    #update(float deltaSecs)
+    {
+        bool hasMoved = false;
+        
+        if (mouseWheelDelta != 0)
+        {
+            pos += dirForward * (mouseWheelDelta * deltaSecs * 0.01);
+            mouseWheelDelta = 0;
+            hasMoved = true;
+        }
+
+        if (mouseLooking)
+        {
+            bool hasRotated = false;
+            if (mouseDeltaX != 0.0)
+            {
+                float angle = -mouseDeltaX * rotDelta;
+                quat orientDelta = $.quat_from_axis_angle(dirUp, angle);
+                orientation = orientDelta * orientation;
+                hasRotated = true;
+            }
+
+            if (mouseDeltaY != 0.0)
+            {
+                float angle = mouseDeltaY * rotDelta;
+                quat orientDelta = $.quat_from_axis_angle(dirRight, angle);
+                orientation = orientDelta * orientation;
+                hasRotated = true;
+            }
+
+            if (hasRotated)
+            {
+                orientation = $.quat_normalize(orientation);
+                
+                dirForward = orientation * dirForwardInit;
+                dirRight = orientation * dirRightInit;
+
+                // LORRTODO - Add dot accessors to language.
+                // Zero out dirRight.y, re-normalize, and calc
+                // dirUp with dirForward X dirRight.
+                // This should correct "roll" weirdness.
+                //dirRight.y = 0.0;
+
+                dirUp = orientation * dirUpInit;
+
+                hasMoved = true;
+            }
+            
+            mouseDeltaX = 0.0;
+            mouseDeltaY = 0.0;
+        }
+
+        if (forwardBackward != 0.0)
+        {
+            pos += dirForward * (moveDelta * forwardBackward * deltaSecs);
+            hasMoved = true;
+        }
+        if (leftRight != 0.0)
+        {
+            pos += dirRight * (moveDelta * leftRight * deltaSecs);
+            hasMoved = true;
+        }
+        if (hasMoved)
+        {
+            $.renderer_move_camera(pos, orientation);
+        }
+    }
+
+    #mouse_look(bool status)
+    {
+        mouseLooking = status;
+    }
+
+    #mouse_move(int xDelta, int yDelta)
+    {
+        //short xDelta = delta >> 16;
+        //short yDelta = delta << 16 >> 16;
+
+        //$.print(string{"delta: %x, xDelta: %d %x, yDelta: %d %x", delta, xDelta, xDelta, yDelta, yDelta});
+        //$.print(string{"xDelta: %d, yDelta: %d", xDelta, yDelta});
+        if (mouseLooking)
+        {
+            mouseDeltaX += xDelta;
+            mouseDeltaY += yDelta;
+        }
+    }
+
+    #mouse_wheel(int delta)
+    {
+        mouseWheelDelta += delta;
+    }
+
+    #forward(bool status)
+    {
+        if (status)
+        {
+            forwardBackward = 1.0;
+        }
+        else
+        {
+            forwardBackward = 0.0;
+        }
+    }
+
+    #back(bool status)
+    {
+        if (status)
+        {
+            forwardBackward = -1.0;
+        }
+        else
+        {
+            forwardBackward = 0.0;
+        }
+    }
+
+    #left(bool status)
+    {
+        if (status)
+        {
+            leftRight = 1.0;
+        }
+        else
+        {
+            leftRight = 0.0;
+        }
+    }
+
+    #right(bool status)
+    {
+        if (status)
+        {
+            leftRight = -1.0;
+        }
+        else
+        {
+            leftRight = 0.0;
+        }
+    }
+}
+
+// Rotate a model when wasd keys are pressed
+component WasdRot
+{
+    float yawing = 0.0;
+    float yaw = 0.0;
+
+    float pitching = 0.0;
+    float pitch = 0.0;
+
+    #init()
+    {
+        //$.watch_input_state(#mouse_look, uint{0}, #mouse_look);
+        //$.watch_mouse(#mouse_move, #mouse_wheel);
+
+        $.watch_input_state(#forward, uint{0}, #forward);
+        $.watch_input_state(#back, uint{0}, #back);
+        $.watch_input_state(#left, uint{0}, #left);
+        $.watch_input_state(#right, uint{0}, #right);
+    }
+
+    #update(float deltaSecs)
+    {
+        if (pitching != 0.0 || yawing != 0.0)
+        {
+            pitch += pitching * deltaSecs * 100.0;
+            yaw += yawing * deltaSecs * 100.0;
+            mat43 trans = $.mat43_rotation(vec3{$.radians(pitch), $.radians(yaw), 0.0});
+            @#transform(false, trans);
+        }
+    }
+
+    #forward(bool status)
+    {
+        if (status)
+        {
+            pitching = 1.0;
+        }
+        else
+        {
+            pitching = 0.0;
+        }
+    }
+
+    #back(bool status)
+    {
+        if (status)
+        {
+            pitching = -1.0;
+        }
+        else
+        {
+            pitching = 0.0;
+        }
+    }
+
+    #left(bool status)
+    {
+        if (status)
+        {
+            yawing = 1.0;
+        }
+        else
+        {
+            yawing = 0.0;
+        }
+    }
+
+    #right(bool status)
+    {
+        if (status)
+        {
+            yawing = -1.0;
+        }
+        else
+        {
+            yawing = 0.0;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+
